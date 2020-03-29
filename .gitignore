@@ -1,0 +1,9 @@
+__pycache__
+.mypy_cache
+.venv
+.vscode
+gui\__pycache__
+spp\__pycache__
+
+run
+rect.json
