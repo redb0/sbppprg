@@ -6,12 +6,7 @@ from random import uniform, random
 
 def patch_rect(axis, xy, w, h, **kwargs):
     obj = axis.add_patch(
-        patches.Rectangle(
-            xy,  # (x,y)
-            w,
-            h,
-            **kwargs
-        )
+        patches.Rectangle(xy, w, h, **kwargs)
     )
     return obj
 
@@ -36,26 +31,25 @@ def visualize_separately(width, length_marking, rectangles):
                 rectangles_with_annotation.append((obj, annot))
         axes[i].set_xlim(0, width)
         axes[i].set_ylim(0, length_marking[h])
-        axes[i].title.set_text(f'Толщина {h} мм')
+        axes[i].title.set_text(f'Height {h} mm')
         axes[i].set_xlabel(f'$x$')
-        axes[i].set_ylabel(f'$y$')
+        axes[i].set_ylabel(f'$y$', rotation=0)
         axes[i].set_aspect('equal', adjustable='box')
-    on_move_id = fig.canvas.mpl_connect('button_press_event', on_move)  # motion_notify_event
+    on_move_id = fig.canvas.mpl_connect('button_press_event', on_move)
     plt.show()
 
 
 def get_annotation(ax, description, xy, pos):
     annotation = ax.annotate(description,
-        xy=xy,  # (r.x, r.y+l)
+        xy=xy,
         xycoords='data',
-        xytext=pos, textcoords='data',  # (x, y)
+        xytext=pos, textcoords='data',
         horizontalalignment="left",
         bbox=dict(boxstyle="round", facecolor="w", 
                 edgecolor="0.5", alpha=0.9),
         va='top',
         ha = 'left'
-        )
-    # by default, disable the annotation visibility
+    )
     annotation.set_visible(False)
     return annotation
 
@@ -72,9 +66,9 @@ def visualize_mgroup(width, length, length_marking, groups):
     axes = fig.add_subplot(1, 1, 1)
     axes.add_patch(
         patches.Rectangle(
-            (0, 0),  # (x,y)
+            (0, 0),
             width,
-            sum(length_marking),  # sum(length_marking)  length
+            sum(length_marking),
             hatch='x',
             fill=False,
         )
@@ -86,10 +80,6 @@ def visualize_mgroup(width, length, length_marking, groups):
             l = 0
         else:
             l += length_marking[i-1]
-        # y_text = (sum(length_marking[:i]) + length_marking[i] / 2) / length
-        # axes.annotate(f'$h={height:.2f}$', xy=(-0.2, y_text), xytext=(-0.6, y_text), 
-        #       xycoords='axes fraction', ha='center', va='center',
-        #       arrowprops=dict(arrowstyle=f'-[, widthB={.1}, lengthB=1.0', lw=1.0))
         c_0 = uniform(0, 1)
         c_1 = create_grad(max(group.keys()))
         for k, (p, rects) in enumerate(group.items()):
@@ -97,10 +87,9 @@ def visualize_mgroup(width, length, length_marking, groups):
             for j, r in enumerate(rects):
                 obj = axes.add_patch(
                     patches.Rectangle(
-                        (r.x, r.y+l),  # (x,y)
-                        r.w,  # width
-                        r.l,  # height
-                        # color=(random(), random(), random()), 
+                        (r.x, r.y+l),
+                        r.w,
+                        r.l,
                         color=(c_0, c_1[k], c_2[j]), 
                         ec='k', lw=0.5
                     )
@@ -115,10 +104,10 @@ def visualize_mgroup(width, length, length_marking, groups):
         if i > 0:
             axes.axhline(l, 0, width, color='k', linewidth=2)
     
-    on_move_id = fig.canvas.mpl_connect('button_press_event', on_move)  # motion_notify_event
+    on_move_id = fig.canvas.mpl_connect('button_press_event', on_move)
     
     axes.set_xlim(0, width)
-    axes.set_ylim(0, sum(length_marking))  # length
+    axes.set_ylim(0, sum(length_marking))
     plt.gca().set_aspect('equal', adjustable='box')
     plt.show()
 
