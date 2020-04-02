@@ -5,7 +5,6 @@ from typing import List, Tuple, Union, Optional, MutableMapping, Callable
 from .rectangle import Rectangle
 
 
-# expect generic types, return specific types.
 Num = Union[int, float]
 RectType = Tuple[Num, Num]
 Group = MutableMapping[Num, List[RectType]]

@@ -10,7 +10,7 @@ from .rectangle import Rectangle
 Num = Union[int, float]
 ListNum = List[Num]
 RectType = Tuple[Num, Num]
-Group = MutableMapping[Num, List[RectType]]  # без Optional куча ошибок mypy Union[int, float]
+Group = MutableMapping[Num, List[RectType]]
 DictGroup = MutableMapping[Num, Group]
 GroupIdx = MutableMapping[Num, List[int]]
 DictGroupIdx = MutableMapping[Num, GroupIdx]
@@ -22,15 +22,6 @@ def packaging(width: Num, length: Num, rectangles: DictGroup,
               sorting: str="width", strain: Num=1., 
               rounding_func: Optional[Callable[[Num], Num]]=None) -> Tuple[ResDictGroup, DictGroupIdx, Dict[Num, Num], Num]:
     """Функция двумерной упаковки прямоугольников
-
-    Задача гильотинного раскроя: 
-    https://en.wikipedia.org/wiki/Guillotine_problem.
-
-    Алгоритм является модификацией алгоритма, описанного в 
-    Zhang D, Shi L, Leung SCH, Wu T (2016) 
-    A priority heuristic for the guillotine rectangular packing problem. 
-    Inform Process Lett 116(1):15–21
-    https://www.sciencedirect.com/science/article/abs/pii/S0020019015001519.
 
     Алгоритм учитывает приоритета детали, толщину и возможность 
     гильотинного раскроя.
@@ -83,12 +74,11 @@ def packaging(width: Num, length: Num, rectangles: DictGroup,
     sorted_keys_all = sorted(sorted_keys_all, key=lambda x: (x[1], -x[0]))
 
     for height, p in sorted_keys_all:
-        # group_idx = list(transformed_rectangles.keys()).index(height)
         if (height in res) and (not indices[height][p]):  # пустой
             continue
         if height not in length_marking:
             length_marking[height] = 0.
-        current_y = length_marking[height]  # group_idx
+        current_y = length_marking[height]
         group = transformed_rectangles[height]
         if height != 3.0:                                                                                              
             new_len = deformation(length, conversion_height, height, strain=strain, rounding_func=lambda x: round(x, 1))
@@ -96,7 +86,7 @@ def packaging(width: Num, length: Num, rectangles: DictGroup,
             new_len = length                                                                                          
         # получаем и упаковываем группы прямоугольников на лист с неизвестно длиной
         l, rect = phspprg(width, group, indices[height], y0=current_y)
-        if l > new_len:  # length
+        if l > new_len:
             reestablish(indices[height], rect)
             transformed_rectangles, indices = sort_rectangles(transformed_rectangles, sorting, indices)
             upper_bound, rect = phsbpprg(width, length, group, indices[height], y0=current_y)  # TODO: приоритет не учитывается
@@ -104,7 +94,7 @@ def packaging(width: Num, length: Num, rectangles: DictGroup,
                 continue
             l = upper_bound - current_y
 
-        length_marking[height] += l  # group_idx
+        length_marking[height] += l
 
         if height in res:
             for key, list_r in rect.items():
@@ -115,25 +105,9 @@ def packaging(width: Num, length: Num, rectangles: DictGroup,
         else:
             res[height] = rect
 
-        # back_deformation(l, height, h1, strain=strain, rounding_func=lambda x: round(x, 4))
         length -= back_deformation(l, conversion_height, height, strain=strain, rounding_func=lambda x: round(x, 4))
         if length == 0:
             break
-
-    # for height, _ in sorted_keys:
-    #     # получаем и упаковываем группы прямоугольников на лист с неизвестно длиной
-    #     group = transformed_rectangles[height]
-    #     l, rect, indices[height] = phspprg(width, group, sorting=sorting)
-
-    #     if l > length:
-    #         rect, indices[height] = phsbpprg(width, length, group, sorting=sorting)
-    #         l = length
-
-    #     length_marking.append(l)
-    #     res[height] = rect
-    #     length = length - l
-    #     if length == 0:
-    #         break
 
     return res, indices, length_marking, length
 
@@ -161,7 +135,7 @@ def sort_rectangles(rectangles, sorting: str, indices=None):
         for p, r_list in group.items():
             for i, r in enumerate(r_list):
                 if r[0] > r[1]:
-                    r_list[i] = (r_list[i][1], r_list[i][0])  # tuple
+                    r_list[i] = (r_list[i][1], r_list[i][0])
             if p not in indices[height]:
                 indices[height][p] = sorted(range(len(r_list)), key=lambda x: -group[p][x][wh])
             else:
@@ -170,7 +144,8 @@ def sort_rectangles(rectangles, sorting: str, indices=None):
     return rectangles, indices
 
 
-def phsbpprg(width: Num, length: Num, rectangles: Group, indexes: GroupIdx, x0: Num=0., y0: Num=0.) -> Tuple[Num, ResGroup]:  # , sorting: str="width" indexes, 
+def phsbpprg(width: Num, length: Num, rectangles: Group, 
+             indexes: GroupIdx, x0: Num=0., y0: Num=0.) -> Tuple[Num, ResGroup]:
     """Функция упаковки листа с фиксированно длиной"""
     
     result: ResGroup = {}
@@ -193,7 +168,7 @@ def phspprg(width: Num, rectangles: Group, indices: GroupIdx, x0: Num=0., y0: Nu
     max_priority = min([k for k, v in indices.items() if v])
     first_priority = indices[max_priority]
 
-    x, y, w, l, L = x0, y0, 0, 0, y0  # 0
+    x, y, w, l, L = x0, y0, 0, 0, y0
     while first_priority:
         idx = first_priority.pop(0)
         r = rectangles[max_priority][idx]
@@ -205,15 +180,15 @@ def phspprg(width: Num, rectangles: Group, indices: GroupIdx, x0: Num=0., y0: Nu
             x, y, w, l, L = r[0], L, width - r[0], r[1], L + r[1]
         else:
             result[max_priority].append(Rectangle(x, y, r[1], r[0], idx))
-            x, y, w, l, L = r[1], L, width - r[1], r[0], L + r[0]  # r[1], L, 
-        recursive_packing(x, y, w, l, 1, rectangles, indices, result)  # 
+            x, y, w, l, L = r[1], L, width - r[1], r[0], L + r[0]
+        recursive_packing(x, y, w, l, 1, rectangles, indices, result)
         x, y = 0, L
 
     return L - y0, result
 
 
 def recursive_packing(x: Num, y: Num, w: Num, h: Num, D: int, 
-                      remaining: Group, indices: GroupIdx, result: ResGroup) -> None:  # remaining - dict, indices - dict
+                      remaining: Group, indices: GroupIdx, result: ResGroup) -> None:
     """Helper function to recursively fit a certain area."""
     g = len(remaining.keys())
     variant: List[int] = []
@@ -231,10 +206,8 @@ def recursive_packing(x: Num, y: Num, w: Num, h: Num, D: int,
         if variant[i] < 5:
             key = priorities[i]
             if orientation[i] == 0:
-                # omega, d = remaining[key][best[i]][0], remaining[key][best[i]][1]
                 omega, d = remaining[key][best[i]]
             else:
-                # omega, d = remaining[key][best[i]][1], remaining[key][best[i]][0]
                 d, omega = remaining[key][best[i]]
             if key not in result:
                 result[key] = []
