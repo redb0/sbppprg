@@ -18,7 +18,7 @@ def visualize_separately(width, length_marking, rectangles):
         axes = [axes]
     rectangles_with_annotation = []
     for i, (h, group) in enumerate(rectangles.items()):
-        patch_rect(axes[i], (0, 0), width, length_marking[h], hatch='x', fill=False)
+        patch_rect(axes[i], (0, 0), width, length_marking[i], hatch='x', fill=False)
         for p, list_r in group.items():
             for r in list_r:
                 obj = patch_rect(axes[i], (r.x, r.y), r.w, r.l, color=(random(), random(), random()), ec='k', lw=0.5)
@@ -30,12 +30,12 @@ def visualize_separately(width, length_marking, rectangles):
                 annot = get_annotation(axes[i], description, (r.x, r.y), (0, 0))
                 rectangles_with_annotation.append((obj, annot))
         axes[i].set_xlim(0, width)
-        axes[i].set_ylim(0, length_marking[h])
+        axes[i].set_ylim(0, length_marking[i])
         axes[i].title.set_text(f'Height {h} mm')
         axes[i].set_xlabel(f'$x$')
         axes[i].set_ylabel(f'$y$', rotation=0)
         axes[i].set_aspect('equal', adjustable='box')
-    on_move_id = fig.canvas.mpl_connect('button_press_event', on_move)
+    on_move_id = fig.canvas.mpl_connect('button_press_event', on_move(fig, rectangles_with_annotation))
     plt.show()
 
 
@@ -112,7 +112,7 @@ def visualize_mgroup(width, length, length_marking, groups):
     plt.show()
 
 
-def on_move(rectangles_with_annotation):
+def on_move(fig, rectangles_with_annotation):
     def inner(event):
         if event.button == 1:
             for rectangle, annotation in rectangles_with_annotation:
@@ -131,5 +131,5 @@ def on_move(rectangles_with_annotation):
         else:
             for rectangle, annotation in rectangles_with_annotation:
                 annotation.set_visible(False)
-        plt.draw()
+        fig.canvas.draw()
     return inner

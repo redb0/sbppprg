@@ -2,7 +2,7 @@ from pprint import pprint
 
 from spp.ph import phspprg, phsbpprg, packaging
 from spp import visualize_mgroup, visualize_separately
-from spp.support import to_json, items_by_index, area
+from spp.support import to_json, items_by_index, area, get_strip_lengths
 
 
 def example_1():
@@ -34,6 +34,10 @@ def example_1():
     
     unplaced = items_by_index(rect, unplaced_idx)
 
+    if unused_len == length:
+        print('Лист слишком мал. Не удалось разместить ни одного прямоугольника')
+        return
+
     s = area(res, as_nt=True)
     required_s = area(rect)
 
@@ -56,7 +60,9 @@ def example_1():
     print('Неразмещенные прямоугольники:')
     pprint(unplaced)
 
-    visualize_separately(width, len_m, res)
+    strip_lengths = get_strip_lengths(length, len_m, rounding_func=lambda x: round(x, 1))
+
+    visualize_separately(width, strip_lengths, res)
 
 
 def example_2():
@@ -104,7 +110,8 @@ def example_2():
     print('Неразмещенные прямоугольники:')
     pprint(unplaced)
     
-    visualize_separately(width, len_m, res)
+    strip_lengths = get_strip_lengths(length, len_m, rounding_func=lambda x: round(x, 1))
+    visualize_separately(width, strip_lengths, res)
 
 
 def example_3():
@@ -147,7 +154,8 @@ def example_3():
     print('Неразмещенные прямоугольники:')
     pprint(unplaced)
 
-    visualize_separately(width, len_m, res)
+    strip_lengths = get_strip_lengths(length, len_m, rounding_func=lambda x: round(x, 1))
+    visualize_separately(width, strip_lengths, res)
 
 
 def main():

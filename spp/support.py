@@ -209,6 +209,19 @@ def isnamedtupleinstance(x):
     return all(type(n) == str for n in f)
 
 
+def get_strip_lengths(length, group_len, strain=1., rounding_func=None):
+    group_len = list(group_len.items())
+    strip_lengths = []
+    for i, (h, l) in enumerate(group_len):
+        if i == 0:
+            strip_len = length
+        else:
+            strip_len = strip_lengths[-1] - group_len[i - 1][1]
+            strip_len = deformation(strip_len, group_len[i - 1][0], h, strain=strain, rounding_func=rounding_func)
+        strip_lengths.append(strip_len)
+    return strip_lengths
+
+
 def area(rectangles, as_nt=False):
     s = dict()
     for h, group in rectangles.items():
