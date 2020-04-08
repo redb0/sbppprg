@@ -108,7 +108,9 @@ def packaging(width: Num, length: Num, rectangles: DictGroup,
         length -= back_deformation(l, conversion_height, height, strain=strain, rounding_func=lambda x: round(x, 4))
         if length == 0:
             break
-
+    
+    res = dict(sorted(res.items(), key=lambda x: -x[0]))
+    length_marking = dict(sorted(length_marking.items(), key=lambda x: -x[0]))
     return res, indices, length_marking, length
 
 
